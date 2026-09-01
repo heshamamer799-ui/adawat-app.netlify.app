@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>دفتر الفروق</title>
+  <meta name="description" content="حاسبة سعر الصرف وفروق التسعير وصافي الربح للتاجر الإلكتروني">
+  <meta property="og:title" content="دفتر الفروق">
+  <meta property="og:description" content="حاسبة سعر الصرف وفروق التسعير وصافي الربح للتاجر الإلكتروني">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink-navy: #0F1B2B;
+      --panel-navy: #16273D;
+      --paper: #F4EFE4;
+      --paper-dim: #D9D1BE;
+      --gold: #C9A24B;
+      --profit-green: #3FA796;
+      --warn-amber: #E0973B;
+      --loss-red: #C4573F;
+      --hair: rgba(244, 239, 228, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 12% 0%, #16273D 0%, #0F1B2B 55%),
+        var(--ink-navy);
+      font-family: 'Cairo', sans-serif;
+      color: var(--paper);
+      padding: 28px 16px 60px;
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    /* ---------- HEADER ---------- */
+    .masthead {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-bottom: 2px solid var(--gold);
+      padding-bottom: 16px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .masthead h1 {
+      font-family: 'Tajawal', sans-serif;
+      font-weight: 900;
+      font-size: clamp(28px, 4vw, 42px);
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+
+    .masthead .sub {
+      color: var(--paper-dim);
+      font-size: 13.5px;
+      margin-top: 4px;
+    }
+
+    .rate-agent {
+      text-align: left;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--paper-dim);
+      min-width: 220px;
+    }
+
+    .rate-agent .agent-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(63, 167, 150, 0.12);
+      border: 1px solid var(--profit-green);
+      color: var(--profit-green);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .15s ease;
+    }
+
+    .rate-agent .agent-badge:hover {
+      transform: translateY(-1px);
+    }
+
+    .rate-agent .agent-badge.busy {
+      opacity: .6;
+      cursor: progress;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--profit-green);
+    }
+
+    .rate-line {
+      margin-top: 8px;
+      direction: ltr;
+      text-align: left;
+    }
+
+    /* ---------- LAYOUT ---------- */
+    .grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 22px;
+    }
+
+    @media (max-width: 820px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ---------- LEDGER (inputs) ---------- */
+    .ledger {
+      background: var(--panel-navy);
+      border: 1px solid var(--hair);
+      border-radius: 6px;
+      padding: 24px 24px 8px;
+      position: relative;
+    }
+
+    .ledger::before {
+      content: "سجل التكاليف";
+      position: absolute;
+      top: -13px;
+      right: 20px;
+      background: var(--panel-navy);
+      padding: 0 10px;
+      font-family: 'Tajawal', sans-serif;
+      font-weight: 700;
+      color: var(--gold);
+      font-size: 14px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      border-bottom: 1px dashed var(--hair);
+      padding: 14px 0;
+    }
+
+    .field-row.single {
+      grid-template-columns: 1fr;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 12.5px;
+      color: var(--paper-dim);
+    }
+
+    .field .hint {
+      font-size: 10.5px;
+      color: var(--paper-dim);
+      opacity: .7;
+    }
+
+    .input-combo {
+      display: flex;
+      gap: 6px;
+    }
+
+    input[type=number] {
+      width: 100%;
+      background: rgba(244, 239, 228, 0.05);
+      border: 1px solid var(--hair);
+      border-radius: 4px;
+      padding: 9px 10px;
+      color: var(--paper);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 15px;
+      direction: ltr;
+      text-align: right;
+    }
+
+    input[type=number]:focus {
+      outline: 2px solid var(--gold);
+      outline-offset: 1px;
+    }
+
+    select {
+      background: rgba(244, 239, 228, 0.07);
+      border: 1px solid var(--hair);
+      border-radius: 4px;
+      color: var(--paper);
+      font-family: 'Cairo', sans-serif;
+      font-size: 13.5px;
+      padding: 9px 8px;
+    }
+
+    select option {
+      background: var(--panel-navy);
+      color: var(--paper);
+    }
+
+    .qty-fee {
+      display: flex;
+      gap: 10px;
+      padding: 14px 0;
+    }
+
+    /* ---------- RECEIPT (output) ---------- */
+    .receipt-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .receipt {
+      background: var(--paper);
+      color: var(--ink-navy);
+      border-radius: 2px;
+      padding: 26px 24px 18px;
+      font-family: 'IBM Plex Mono', monospace;
+      position: relative;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .receipt::after {
+      content: "";
+      position: absolute;
+      bottom: -9px;
+      left: 0;
+      right: 0;
+      height: 18px;
+      background:
+        radial-gradient(circle 9px at 12px 0, transparent 9px, var(--paper) 9.5px) 0 -9px/24px 18px repeat-x;
+    }
+
+    .receipt .r-head {
+      text-align: center;
+      font-family: 'Tajawal', sans-serif;
+      font-weight: 900;
+      font-size: 15px;
+      letter-spacing: 2px;
+      border-bottom: 2px dashed var(--ink-navy);
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+
+    .r-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12.5px;
+      padding: 5px 0;
+      direction: ltr;
+    }
+
+    .r-line span:first-child {
+      direction: rtl;
+      text-align: right;
+    }
+
+    .r-line.total {
+      border-top: 1px solid var(--ink-navy);
+      margin-top: 6px;
+      padding-top: 10px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .r-line.profit {
+      font-family: 'Tajawal', sans-serif;
+      font-weight: 900;
+      font-size: 19px;
+      border-top: 2px dashed var(--ink-navy);
+      margin-top: 10px;
+      padding-top: 12px;
+    }
+
+    .margin-tag {
+      display: inline-block;
+      margin-top: 10px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    /* ---------- AGENT NOTES ---------- */
+    .agent-notes {
+      background: var(--panel-navy);
+      border: 1px solid var(--hair);
+      border-radius: 6px;
+      padding: 18px 20px;
+    }
+
+    .agent-notes h3 {
+      font-family: 'Tajawal', sans-serif;
+      margin: 0 0 10px;
+      font-size: 14.5px;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .agent-notes h3::before {
+      content: "◆";
+      font-size: 10px;
+    }
+
+    .agent-notes ul {
+      margin: 0;
+      padding: 0 18px 0 0;
+      list-style: none;
+    }
+
+    .agent-notes li {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--paper-dim);
+      padding-right: 16px;
+      position: relative;
+      margin-bottom: 8px;
+    }
+
+    .agent-notes li::before {
+      content: "—";
+      position: absolute;
+      right: 0;
+      color: var(--gold);
+    }
+
+    .agent-notes li.warn {
+      color: var(--warn-amber);
+    }
+
+    .agent-notes li.good {
+      color: var(--profit-green);
+    }
+
+    .foot-note {
+      text-align: center;
+      font-size: 11px;
+      color: var(--paper-dim);
+      opacity: .55;
+      margin-top: 30px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div>
+      <h1 id="app-title">دفتر الفروق</h1>
+      <div class="sub" id="app-subtitle">حاسبة سعر الصرف وفروق التسعير وصافي الربح للتاجر الإلكتروني</div>
+    </div>
+    <div class="rate-agent">
+      <button class="agent-badge" id="agentBtn" onclick="fetchLiveRate()">
+        <span class="dot"></span> وكيل الأسعار — تحديث تلقائي
+      </button>
+      <div class="rate-line" id="rateStatus">لم يتم الجلب بعد — أدخل السعر يدويًا أو فعّل الوكيل</div>
+    </div>
+  </header>
+
+  <main class="grid">
+
+    <!-- LEDGER: INPUTS -->
+    <section class="ledger" id="ledger-section">
+
+      <div class="field-row">
+        <div class="field">
+          <label for="fromCcy">عملة الشراء (المصدر)</label>
+          <select id="fromCcy" onchange="clearRate()">
+            <option value="USD">USD — دولار أمريكي</option>
+            <option value="CNY">CNY — يوان صيني</option>
+            <option value="EUR">EUR — يورو</option>
+            <option value="GBP">GBP — جنيه إسترليني</option>
+            <option value="TRY">TRY — ليرة تركية</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="toCcy">عملة البيع (المحلية)</label>
+          <select id="toCcy" onchange="clearRate()">
+            <option value="EGP">EGP — جنيه مصري</option>
+            <option value="SAR">SAR — ريال سعودي</option>
+            <option value="AED">AED — درهم إماراتي</option>
+            <option value="USD">USD — دولار أمريكي</option>
+            <option value="KWD">KWD — دينار كويتي</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-row single">
+        <div class="field">
+          <label for="rate">سعر الصرف (وحدة من عملة الشراء = ؟ عملة البيع)</label>
+          <input type="number" id="rate" step="0.0001" value="49.20" oninput="calc()">
+          <span class="hint" id="rateHint">أدخله يدويًا أو اضغط "وكيل الأسعار" لجلبه تلقائيًا</span>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="unitCost">تكلفة الوحدة (بعملة الشراء)</label>
+          <input type="number" id="unitCost" step="0.01" value="8" oninput="calc()">
+        </div>
+        <div class="field">
+          <label for="qty">الكمية</label>
+          <input type="number" id="qty" step="1" value="1" oninput="calc()">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="extraFees">مصاريف إضافية — شحن وجمارك (بعملة البيع، للطلبية كاملة)</label>
+          <input type="number" id="extraFees" step="0.01" value="0" oninput="calc()">
+        </div>
+        <div class="field">
+          <label for="platformFee">عمولة المنصة / الدفع (%)</label>
+          <input type="number" id="platformFee" step="0.1" value="0" oninput="calc()">
+        </div>
+      </div>
+
+      <div class="field-row single">
+        <div class="field">
+          <label for="sellPrice">سعر البيع للوحدة (بعملة البيع)</label>
+          <input type="number" id="sellPrice" step="0.01" value="650" oninput="calc()">
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RECEIPT: OUTPUT -->
+    <section class="receipt-col" id="receipt-section">
+      <div class="receipt" id="receipt-card">
+        <div class="r-head">إيصال التسعير</div>
+        <div class="r-line"><span>تكلفة الوحدة بعملة البيع</span><span id="o-unitLocal">—</span></div>
+        <div class="r-line"><span>فرق السعر للوحدة</span><span id="o-diff">—</span></div>
+        <div class="r-line"><span>نسبة الترميز (Markup %)</span><span id="o-markup">—</span></div>
+        <div class="r-line"><span>إجمالي الإيراد</span><span id="o-revenue">—</span></div>
+        <div class="r-line"><span>عمولة المنصة</span><span id="o-fee">—</span></div>
+        <div class="r-line total"><span>إجمالي التكلفة (شامل الشحن)</span><span id="o-totalCost">—</span></div>
+        <div class="r-line profit"><span>صافي الربح</span><span id="o-netProfit">—</span></div>
+        <span class="margin-tag" id="o-marginTag">—</span>
+      </div>
+
+      <div class="agent-notes" id="agent-notes-card">
+        <h3>ملاحظات الوكيل الرقمي</h3>
+        <ul id="agentNotes"><li>أدخل بياناتك ليبدأ التحليل...</li></ul>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="foot-note" id="app-footer">
+    الأسعار التقديرية من وكيل الأسعار قد تختلف قليلًا عن سعر البنك أو منصة الدفع الفعلي — راجعها قبل التسعير النهائي.
+  </footer>
+</div>
+
+<script>
+const fmt = (n, ccy) => {
+  if (!isFinite(n)) return '—';
+  return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + ccy;
+};
+
+function clearRate() {
+  document.getElementById('rateHint').textContent = 'أدخله يدويًا أو اضغط "وكيل الأسعار" لجلبه تلقائيًا';
+  document.getElementById('rateStatus').textContent = 'تغيّرت العملات — اضغط الوكيل لتحديث السعر';
+  calc();
+}
+
+function fetchWithTimeout(url, ms) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(id));
+}
+
+async function fetchLiveRate() {
+  const btn = document.getElementById('agentBtn');
+  const status = document.getElementById('rateStatus');
+  const from = document.getElementById('fromCcy').value;
+  const to = document.getElementById('toCcy').value;
+  btn.classList.add('busy');
+  status.textContent = 'الوكيل يجلب السعر الحالي...';
+
+  // المصدر الأول: Open Exchange Rates public endpoint
+  try {
+    const res = await fetchWithTimeout(`https://open.er-api.com/v6/latest/${from}`, 5000);
+    const data = await res.json();
+    if (data && data.rates && data.rates[to]) {
+      applyRate(data.rates[to], from, to, data.time_last_update_utc);
+      btn.classList.remove('busy');
+      return;
+    }
+  } catch (e) {
+    /* Fallback */
+  }
+
+  status.textContent = 'المصدر الأول بطيء — الوكيل يجرّب مصدرًا بديلًا...';
+
+  // المصدر البديل: Frankfurter API
+  try {
+    const res2 = await fetchWithTimeout(`https://api.frankfurter.app/latest?from=${from}&to=${to}`, 5000);
+    const data2 = await res2.json();
+    if (data2 && data2.rates && data2.rates[to]) {
+      applyRate(data2.rates[to], from, to, data2.date);
+      btn.classList.remove('busy');
+      return;
+    }
+    status.textContent = 'تعذر جلب هذا الزوج تلقائيًا — أدخل السعر يدويًا';
+  } catch (e) {
+    status.textContent = 'تعذر الاتصال بمصادر الأسعار (قد تكون الشبكة محجوبة) — أدخل السعر يدويًا';
+  }
+  btn.classList.remove('busy');
+}
+
+function applyRate(rate, from, to, when) {
+  document.getElementById('rate').value = rate.toFixed(4);
+  document.getElementById('rateHint').textContent = 'تم الجلب تلقائيًا بواسطة وكيل الأسعار';
+  document.getElementById('rateStatus').textContent =
+    `آخر تحديث: ${when || 'الآن'} — 1 ${from} = ${rate.toFixed(4)} ${to}`;
+  calc();
+}
+
+function calc() {
+  const from = document.getElementById('fromCcy').value;
+  const to = document.getElementById('toCcy').value;
+  const rate = parseFloat(document.getElementById('rate').value) || 0;
+  const unitCost = parseFloat(document.getElementById('unitCost').value) || 0;
+  const qty = parseFloat(document.getElementById('qty').value) || 0;
+  const extraFees = parseFloat(document.getElementById('extraFees').value) || 0;
+  const feePct = parseFloat(document.getElementById('platformFee').value) || 0;
+  const sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
+
+  const unitCostLocal = unitCost * rate;
+  const diff = sellPrice - unitCostLocal;
+  const markup = unitCostLocal > 0 ? (diff / unitCostLocal * 100) : 0;
+
+  const revenue = sellPrice * qty;
+  const feeAmount = revenue * feePct / 100;
+  const totalCost = (unitCostLocal * qty) + extraFees;
+  const netProfit = revenue - feeAmount - totalCost;
+  const margin = revenue > 0 ? (netProfit / revenue * 100) : 0;
+
+  document.getElementById('o-unitLocal').textContent = fmt(unitCostLocal, to);
+  document.getElementById('o-diff').textContent = (diff >= 0 ? '+' : '') + fmt(diff, to);
+  document.getElementById('o-markup').textContent = markup.toFixed(1) + '%';
+  document.getElementById('o-revenue').textContent = fmt(revenue, to);
+  document.getElementById('o-fee').textContent = '- ' + fmt(feeAmount, to);
+  document.getElementById('o-totalCost').textContent = fmt(totalCost, to);
+
+  const profitEl = document.getElementById('o-netProfit');
+  profitEl.textContent = fmt(netProfit, to);
+  profitEl.style.color = netProfit >= 0 ? '#1f6e5f' : '#a13c28';
+
+  const tag = document.getElementById('o-marginTag');
+  tag.textContent = 'هامش الربح: ' + margin.toFixed(1) + '%';
+  if (margin < 10) {
+    tag.style.background = 'rgba(196, 87, 63, 0.15)';
+    tag.style.color = '#a13c28';
+  } else if (margin < 25) {
+    tag.style.background = 'rgba(224, 151, 59, 0.18)';
+    tag.style.color = '#8a5c14';
+  } else {
+    tag.style.background = 'rgba(63, 167, 150, 0.18)';
+    tag.style.color = '#1f6e5f';
+  }
+
+  renderAgentNotes({ margin, feePct, markup, netProfit, qty, extraFees, revenue });
+}
+
+function renderAgentNotes({ margin, feePct, markup, netProfit, qty, extraFees, revenue }) {
+  const notes = [];
+  if (revenue === 0) {
+    notes.push({ t: 'أدخل سعر البيع والكمية لبدء التحليل', cls: '' });
+  } else {
+    if (netProfit < 0) {
+      notes.push({ t: 'التسعير الحالي يحقق خسارة — راجع سعر البيع أو تكلفة الشراء فورًا', cls: 'warn' });
+    } else if (margin < 10) {
+      notes.push({ t: 'هامش الربح أقل من 10% — منخفض لمعظم قطاعات التجارة الإلكترونية، فكّر في رفع السعر أو تقليل التكلفة', cls: 'warn' });
+    } else if (margin < 25) {
+      notes.push({ t: 'هامش الربح ضمن المعدل الطبيعي (10–25%) لكنه قابل للتحسين', cls: '' });
+    } else {
+      notes.push({ t: 'هامش ربح قوي — تأكد أن السعر لا يزال منافسًا في السوق', cls: 'good' });
+    }
+
+    if (feePct > 20) {
+      notes.push({ t: 'عمولة المنصة تتجاوز 20% من الإيراد — قارن بمنصات أو بوابات دفع أخرى', cls: 'warn' });
+    }
+    if (markup < 15 && markup >= 0) {
+      notes.push({ t: 'نسبة الترميز فوق التكلفة منخفضة نسبيًا (' + markup.toFixed(1) + '%) — لا تترك هامش أمان لتقلبات سعر الصرف', cls: 'warn' });
+    }
+    if (qty > 1) {
+      const perUnit = netProfit / qty;
+      notes.push({ t: 'صافي الربح لكل وحدة تقريبًا: ' + perUnit.toFixed(2), cls: '' });
+    }
+    notes.push({ t: 'راقب سعر الصرف يوميًا عبر وكيل الأسعار — فرق 1% في الصرف قد يلتهم هامش ربح كامل', cls: '' });
+  }
+
+  document.getElementById('agentNotes').innerHTML = notes.map(n =>
+    `<li class="${n.cls}">${n.t}</li>`
+  ).join('');
+}
+
+// Initial calculation on load
+window.addEventListener('DOMContentLoaded', () => {
+  calc();
+});
+calc();
+</script>
+</body>
+</html>

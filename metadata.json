@@ -1,0 +1,6 @@
+{
+  "name": "دفتر الفروق",
+  "description": "حاسبة سعر الصرف وفروق التسعير وصافي الربح للتاجر الإلكتروني",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
